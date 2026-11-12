@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:background="@color/brand_black">
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipe"
+        android:layout_width="match_parent" android:layout_height="match_parent">
+        <WebView android:id="@+id/web"
+            android:layout_width="match_parent" android:layout_height="match_parent"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+    <ProgressBar android:id="@+id/progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent" android:layout_height="3dp"
+        android:indeterminate="false" android:max="100"
+        android:progressTint="@color/brand_orange"/>
+
+    <LinearLayout android:id="@+id/offline"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:background="@color/brand_black" android:gravity="center"
+        android:orientation="vertical" android:padding="32dp" android:visibility="gone">
+        <ImageView android:layout_width="120dp" android:layout_height="120dp"
+            android:src="@mipmap/ic_launcher_foreground" android:contentDescription="@null"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="@string/offline_title" android:textColor="#FFFFFF"
+            android:textSize="22sp" android:textStyle="bold"/>
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" android:text="@string/offline_body"
+            android:textColor="#BBBBBB" android:textSize="15sp"/>
+        <Button android:id="@+id/retry"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_marginTop="24dp" android:text="@string/retry"
+            android:backgroundTint="@color/brand_orange" android:textColor="#000000"/>
+    </LinearLayout>
+</FrameLayout>

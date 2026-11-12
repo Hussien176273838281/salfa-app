@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">السالفة بدقيقة</string>
+    <string name="channel_name">البوستات الجديدة</string>
+    <string name="channel_desc">إشعار من ينزل بوست جديد</string>
+    <string name="offline_title">ماكو إنترنت</string>
+    <string name="offline_body">تأكد من الاتصال وارجع حاول</string>
+    <string name="retry">حاول مرة ثانية</string>
+</resources>

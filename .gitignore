@@ -1,0 +1,7 @@
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/google-services.json
+notifier/node_modules/
+*.apk

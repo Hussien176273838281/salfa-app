@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Salfa" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/brand_black</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="postSplashScreenTheme">@style/Theme.Salfa.App</item>
+    </style>
+    <style name="Theme.Salfa.App" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_orange</item>
+        <item name="colorSecondary">@color/brand_orange</item>
+        <item name="android:statusBarColor">@color/brand_black</item>
+        <item name="android:navigationBarColor">@color/brand_black</item>
+        <item name="android:windowBackground">@color/brand_black</item>
+    </style>
+</resources>
