@@ -29,11 +29,10 @@ FEEDS = [
     ("سكاي نيوز عربية", "https://www.skynewsarabia.com/web/rss", "ar"),
     ("سي إن إن بالعربية", "https://arabic.cnn.com/api/v1/rss/rss.xml", "ar"),
     ("الأناضول", "https://www.aa.com.tr/ar/rss/default?cat=guncel", "ar"),
-    ("العربية", "https://www.alarabiya.net/feed/rss2/ar.xml", "ar"),
     ("اندبندنت عربية", "https://www.independentarabia.com/rss.xml", "ar"),
     # أخبار العراق من كل الوكالات العراقية (شفق، السومرية، روداو، واع…) عبر أخبار Google
     ("*", gnews("العراق when:1d"), "ar"),
-    ("*", gnews("عاجل when:1d"), "ar"),
+    ("*", gnews("عاجل العراق when:1d"), "ar"),
     ("*", gnews("بغداد OR البصرة OR أربيل OR الموصل when:1d"), "ar"),
     # أجنبية (تنترجم للعربي)
     ("بي بي سي", "https://feeds.bbci.co.uk/news/world/rss.xml", "en"),
@@ -121,15 +120,21 @@ def parse_feed(name, url, lang):
         out.append({"t": t, "link": link, "ts": ts, "src": src, "lang": lang})
     return out
 
-def translate(items, cache):
+def translate(items, cache, status=None):
     todo = [i for i in items if i["lang"] == "en" and i["t"] not in cache]
+    ok = bad = 0
     for i in todo[:40]:  # حد أعلى بكل دورة
         try:
             q = urllib.parse.urlencode({"client": "gtx", "sl": "en", "tl": "ar", "dt": "t", "q": i["t"]})
             data = json.loads(fetch("https://translate.googleapis.com/translate_a/single?" + q, timeout=8))
             cache[i["t"]] = "".join(seg[0] for seg in data[0] if seg and seg[0]).strip()
-        except Exception:
-            pass
+            ok += 1
+        except Exception as e:
+            bad += 1
+            if status is not None:
+                status["ترجمة_خطأ"] = type(e).__name__ + ": " + str(e)[:80]
+    if status is not None:
+        status["ترجمة"] = f"{ok} نجحت / {bad} فشلت / {len(todo)} بالانتظار"
     for i in items:
         if i["lang"] == "en":
             if i["t"] in cache:
@@ -145,7 +150,8 @@ def norm_tokens(s):
     return {w for w in s.split() if len(w) > 2}
 
 def clean_title(t):
-    t = re.sub(r"^\s*(عاجل|عاجـل|breaking)\s*[:|\-–|]*\s*", "", t, flags=re.I)
+    t = re.sub(r"^[\s#/|:\-–]*(عاجل|عاجـل|breaking)\s*[:|\-–/|]*\s*", "", t, flags=re.I)
+    t = re.sub(r"^[\s/|:\-–]+", "", t)
     t = re.sub(r"\s*[|\-–]\s*(فيديو|صور|video|watch)\s*$", "", t, flags=re.I)
     return re.sub(r"\s+", " ", t).strip()
 
@@ -171,7 +177,7 @@ def collect(cache, status):
         if len(i["t"]) < 12:
             continue
         fresh.append(i)
-    translate(fresh, cache)
+    translate(fresh, cache, status)
     fresh = [i for i in fresh if not i.get("skip")]
     fresh.sort(key=lambda i: i["ts"], reverse=True)
     kept = []
@@ -187,6 +193,8 @@ def collect(cache, status):
             if i["src"] not in dup["also"] and i["src"] != dup["src"]:
                 dup["also"].append(i["src"])
             dup["urgent"] = dup["urgent"] or i["urgent"]
+            continue
+        if sum(1 for k in kept if k["src"] == i["src"]) >= 10:
             continue
         i["_tk"], i["also"] = tk, []
         kept.append(i)
