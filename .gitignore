@@ -5,3 +5,4 @@ android/local.properties
 android/app/google-services.json
 notifier/node_modules/
 *.apk
+__pycache__/
