@@ -117,6 +117,8 @@ def parse_feed(name, url, lang):
                 t, tail = m.group(1).strip(), m.group(2).strip()
                 sname = sname or tail
             src = SRC_AR.get(sname, sname) or "أخبار"
+            if re.search(r"[\u3040-\u30ff\u4e00-\u9fff\uac00-\ud7af]", src):
+                src = "أخبار"
         out.append({"t": t, "link": link, "ts": ts, "src": src, "lang": lang})
     return out
 
