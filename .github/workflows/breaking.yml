@@ -1,0 +1,31 @@
+name: Breaking news (live)
+
+# يجمع الأخبار العاجلة كل دقيقة لمدة ~5 ساعات و45 دقيقة بكل تشغيل،
+# والجدول يعيد تشغيله حتى يبقى شغال 24 ساعة. الناتج على فرع live-data.
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: breaking-news
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Collect breaking news every minute
+        env:
+          DURATION: "20700"
+          INTERVAL: "60"
+          REPO_DIR: "."
+        run: python3 scripts/breaking.py --out /tmp/breaking.json
