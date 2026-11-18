@@ -120,10 +120,37 @@ def parse_feed(name, url, lang):
         out.append({"t": t, "link": link, "ts": ts, "src": src, "lang": lang})
     return out
 
+AI_URL = "https://salfa-bdaqiqa.vercel.app/api/ai"
+_last_ai = [0.0]
+
+def translate_ai(titles):
+    """ترجمة دفعة عناوين عبر المساعد الذكي بموقع السالفة (Gemini)."""
+    prompt = ("ترجم هذه العناوين الإخبارية الإنجليزية إلى عربية فصحى مختصرة بأسلوب شريط الأخبار العاجلة. "
+              "لا تضف أي شرح. رجّع فقط JSON array من نصوص بنفس الترتيب والعدد.\n" + json.dumps(titles, ensure_ascii=False))
+    body = json.dumps({"task": "chat", "messages": [{"role": "user", "content": prompt}], "context": []}).encode()
+    req = urllib.request.Request(AI_URL, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=40) as r:
+        txt = json.loads(r.read()).get("text", "")
+    m = re.search(r"\[[\s\S]*\]", txt)
+    arr = json.loads(m.group(0)) if m else []
+    return [str(x).strip() for x in arr] if len(arr) == len(titles) else []
+
 def translate(items, cache, status=None):
     todo = [i for i in items if i["lang"] == "en" and i["t"] not in cache]
     ok = bad = 0
-    for i in todo[:40]:  # حد أعلى بكل دورة
+    if todo and time.time() - _last_ai[0] > 420:
+        _last_ai[0] = time.time()
+        batch = [i["t"] for i in todo[:12]]
+        try:
+            res = translate_ai(batch)
+            for a, b in zip(batch, res):
+                if b:
+                    cache[a] = b; ok += 1
+            todo = [i for i in todo if i["t"] not in cache]
+        except Exception as e:
+            if status is not None:
+                status["ترجمة_ذكاء_خطأ"] = type(e).__name__ + ": " + str(e)[:80]
+    for i in todo[:15]:  # محاولة احتياطية
         try:
             q = urllib.parse.urlencode({"client": "gtx", "sl": "en", "tl": "ar", "dt": "t", "q": i["t"]})
             data = json.loads(fetch("https://translate.googleapis.com/translate_a/single?" + q, timeout=8))
@@ -133,6 +160,8 @@ def translate(items, cache, status=None):
             bad += 1
             if status is not None:
                 status["ترجمة_خطأ"] = type(e).__name__ + ": " + str(e)[:80]
+            if "429" in str(e):
+                break
     if status is not None:
         status["ترجمة"] = f"{ok} نجحت / {bad} فشلت / {len(todo)} بالانتظار"
     for i in items:

@@ -184,8 +184,9 @@ function apply(d){
  ITEMS=items;
  if(!first){const nu=fresh.find(x=>x.urgent&&Date.now()-new Date(x.ts)<30*60000);if(nu)alertNew(nu)}
  fresh.forEach(x=>SEEN.add(x.id));
- const urg=items.filter(x=>x.urgent&&Date.now()-new Date(x.ts)<3*3600000);
- pool=(urg.length>=3?urg:urg.concat(items.filter(x=>!x.urgent))).slice(0,8);
+ const recent=h=>x=>Date.now()-new Date(x.ts)<h*3600000;
+ const urg=items.filter(x=>x.urgent&&recent(3)(x)), iq=items.filter(x=>x.cat==="iq"&&recent(2)(x));
+ const seenP=new Set();pool=urg.concat(iq,items).filter(x=>!seenP.has(x.id)&&seenP.add(x.id)).slice(0,8);
  renderRows(first?new Set():new Set(fresh.map(x=>x.id)));renderTick();
  if(first){first=false;hi=0;showHero()}
  $("upd").textContent="تحديث "+hm(lastUpd);
