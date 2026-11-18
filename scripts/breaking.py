@@ -136,16 +136,23 @@ def translate_ai(titles, status=None):
     with urllib.request.urlopen(req, timeout=40) as r:
         txt = json.loads(r.read()).get("text", "")
     _ai_note["ترجمة_ذكاء_رد"] = txt[:160]
+    arr = []
     m = re.search(r"\[[\s\S]*\]", txt)
-    arr = json.loads(m.group(0)) if m else []
-    return [str(x).strip() for x in arr] if len(arr) == len(titles) else []
+    if m:
+        try:
+            arr = json.loads(m.group(0))
+        except Exception:
+            arr = []
+    if not arr:  # رد مقطوع: ناخذ النصوص الكاملة اللي بين علامات التنصيص
+        arr = [json.loads('"' + x + '"') for x in re.findall(r'"((?:[^"\\]|\\.)*)"', txt)]
+    return [str(x).strip() for x in arr][: len(titles)]
 
 def translate(items, cache, status=None):
-    todo = [i for i in items if i["lang"] == "en" and i["t"] not in cache]
+    todo = sorted([i for i in items if i["lang"] == "en" and i["t"] not in cache], key=lambda i: i["ts"], reverse=True)
     ok = bad = 0
-    if todo and time.time() - _last_ai[0] > 420:
+    if todo and time.time() - _last_ai[0] > 300:
         _last_ai[0] = time.time()
-        batch = [i["t"] for i in todo[:12]]
+        batch = [i["t"] for i in todo[:7]]
         try:
             res = translate_ai(batch, status)
             for a, b in zip(batch, res):
