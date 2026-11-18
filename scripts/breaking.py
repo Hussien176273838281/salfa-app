@@ -122,6 +122,7 @@ def parse_feed(name, url, lang):
 
 AI_URL = "https://salfa-bdaqiqa.vercel.app/api/ai"
 _last_ai = [0.0]
+_ai_note = {}
 
 def translate_ai(titles, status=None):
     """ترجمة دفعة عناوين عبر المساعد الذكي بموقع السالفة (Gemini)."""
@@ -131,8 +132,7 @@ def translate_ai(titles, status=None):
     req = urllib.request.Request(AI_URL, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
     with urllib.request.urlopen(req, timeout=40) as r:
         txt = json.loads(r.read()).get("text", "")
-    if status is not None:
-        status["ترجمة_ذكاء_رد"] = txt[:160]
+    _ai_note["ترجمة_ذكاء_رد"] = txt[:160]
     m = re.search(r"\[[\s\S]*\]", txt)
     arr = json.loads(m.group(0)) if m else []
     return [str(x).strip() for x in arr] if len(arr) == len(titles) else []
@@ -150,8 +150,7 @@ def translate(items, cache, status=None):
                     cache[a] = b; ok += 1
             todo = [i for i in todo if i["t"] not in cache]
         except Exception as e:
-            if status is not None:
-                status["ترجمة_ذكاء_خطأ"] = type(e).__name__ + ": " + str(e)[:80]
+            _ai_note["ترجمة_ذكاء_خطأ"] = type(e).__name__ + ": " + str(e)[:80]
     for i in todo[:15]:  # محاولة احتياطية
         try:
             q = urllib.parse.urlencode({"client": "gtx", "sl": "en", "tl": "ar", "dt": "t", "q": i["t"]})
@@ -165,6 +164,7 @@ def translate(items, cache, status=None):
             if "429" in str(e):
                 break
     if status is not None:
+        status.update(_ai_note)
         status["ترجمة"] = f"{ok} نجحت / {bad} فشلت / {len(todo)} بالانتظار"
     for i in items:
         if i["lang"] == "en":
