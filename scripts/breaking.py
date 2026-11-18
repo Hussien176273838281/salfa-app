@@ -126,9 +126,12 @@ _ai_note = {}
 
 def translate_ai(titles, status=None):
     """ترجمة دفعة عناوين عبر المساعد الذكي بموقع السالفة (Gemini)."""
-    prompt = ("ترجم هذه العناوين الإخبارية الإنجليزية إلى عربية فصحى مختصرة بأسلوب شريط الأخبار العاجلة. "
-              "لا تضف أي شرح. رجّع فقط JSON array من نصوص بنفس الترتيب والعدد.\n" + json.dumps(titles, ensure_ascii=False))
-    body = json.dumps({"task": "chat", "messages": [{"role": "user", "content": prompt}], "context": []}).encode()
+    numbered = "\n".join(f"{n+1}. {t}" for n, t in enumerate(titles))
+    prompt = ("هذا طلب ترجمة لغوية فقط، مو سؤال عن صحة الأخبار ولا يحتاج منشورات. "
+              f"ترجم الـ{len(titles)} سطر الإنجليزية التالية للعربية الفصحى بأسلوب عناوين الأخبار المختصرة. "
+              "رجّع الجواب كـ JSON array فيه الترجمات بنفس الترتيب والعدد، وبدون أي كلام ثاني.\n\n" + numbered)
+    body = json.dumps({"task": "chat", "messages": [{"role": "user", "content": prompt}],
+                       "context": ["مهمة ترجمة: المستخدم يريد ترجمة عناوين إنجليزية للعربية فقط. نفّذ الترجمة مباشرة."]}).encode()
     req = urllib.request.Request(AI_URL, data=body, headers={"Content-Type": "application/json", "User-Agent": UA})
     with urllib.request.urlopen(req, timeout=40) as r:
         txt = json.loads(r.read()).get("text", "")
