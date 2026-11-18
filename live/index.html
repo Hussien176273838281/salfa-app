@@ -114,7 +114,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:Cai
 .tv #dots{bottom:30px;left:56px}
 .tv #list{top:150px;left:48px;width:700px}
 .tv .rt{font-size:28px}.tv .row{padding:16px 20px;margin-bottom:12px}.tv .tm{font-size:28px;min-width:90px}
-.tv #foot{bottom:150px;left:48px;width:700px;flex-direction:column;align-items:flex-start;gap:14px}
+.tv #foot{bottom:118px;left:48px;width:700px;flex-direction:column;align-items:flex-start;gap:14px}
 .tv .note{bottom:110px;right:48px;left:auto}
 #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;color:var(--mut);z-index:5;background:var(--bg)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -211,7 +211,8 @@ function showHero(){
  $("lnum").textContent=`${(hi%pool.length)+1}/${pool.length}`;
  const hl=$("hl");hl.classList.remove("in");
  hl.innerHTML=esc(x.t).split(" ").map((w,i)=>`<span class="w" style="transition-delay:${i*35}ms">${w}</span>`).join(" ");
- const L=x.t.length;hl.style.fontSize=(mode==="tv"?(L>110?54:L>75?62:70):(L>120?58:L>80?66:76))+"px";
+ let fs=mode==="tv"?70:78;const maxH=$("hero").clientHeight-(mode==="tv"?300:310);hl.style.fontSize=fs+"px";
+ while(hl.scrollHeight>maxH&&fs>40){fs-=3;hl.style.fontSize=fs+"px"}
  requestAnimationFrame(()=>requestAnimationFrame(()=>hl.classList.add("in")));
  $("meta").innerHTML=`<span class="chip s">${esc(x.src)}</span>${x.also&&x.also.length?`<span class="chip">+ ${esc(x.also.slice(0,2).join("، "))}</span>`:""}<span class="chip">${ICON[x.cat]||ICON.world}${CATN[x.cat]||"العالم"}</span><span class="chip">${hm(x.ts)} · ${ago(x.ts)}</span>${x.tr?'<span class="chip">مترجم</span>':""}`;
  $("dots").innerHTML=pool.map((_,i)=>`<b class="${i===hi%pool.length?"on":""}"></b>`).join("");
