@@ -105,6 +105,15 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:Cai
 .story #list{top:968px;inset-inline:40px}
 .story #foot{bottom:126px;inset-inline:40px}
 .story .note{bottom:104px;left:40px}
+/* instagram-safe story */
+.story.ig #hdr{top:160px;inset-inline:110px}
+.story.ig .brand img{height:72px}.story.ig .brand{gap:12px}.story.ig .sidk{font-size:26px;padding:6px 16px 10px}.story.ig .x,.story.ig .clock span{display:none}.story.ig .clock b{font-size:40px}.story.ig .badge{font-size:28px;padding:8px 18px}.story.ig .live{gap:12px}
+.story.ig #hero{top:290px;inset-inline:100px;height:620px}
+.story.ig #hl{font-size:66px;inset-inline:48px}
+.story.ig #meta{inset-inline:48px}
+.story.ig #list{top:950px;inset-inline:100px}
+.story.ig #foot,.story.ig .note{display:none}
+.story.ig #tick{bottom:250px;left:60px;right:60px;border-radius:18px;overflow:hidden}
 /* tv layout */
 .tv #hdr{top:34px;inset-inline:48px}
 .tv .brand img{height:78px}.tv .sidk{font-size:30px}
@@ -145,7 +154,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:Cai
 {
 const Q=new URLSearchParams(location.search);
 const REPO="Hussien176273838281/salfa-app";
-const SOUND=Q.get("sound")==="1", ROT=+(Q.get("rot")||9)*1000;
+const SAFE=Q.get("safe")==="ig";const SOUND=Q.get("sound")==="1", ROT=+(Q.get("rot")||9)*1000;
 const $=id=>document.getElementById(id);
 const stage=$("stage");
 let mode=Q.get("v")||(innerWidth>innerHeight*1.2?"tv":"story");
@@ -161,7 +170,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const hm=ts=>new Date(ts).toLocaleTimeString("en-GB",{timeZone:"Asia/Baghdad",hour:"2-digit",minute:"2-digit"});
 function ago(ts){const m=Math.max(0,Math.round((Date.now()-new Date(ts))/60000));if(m<1)return"هسه";if(m<60)return"قبل "+m+(m<11?" دقايق":" دقيقة");const h=Math.round(m/60);return"قبل "+h+(h<11?" ساعات":" ساعة")}
 
-function fit(){stage.className=mode;const W=mode==="tv"?1920:1080,H=mode==="tv"?1080:1920;const s=Math.min(innerWidth/W,innerHeight/H);stage.style.transform=`scale(${s})`;}
+function fit(){stage.className=mode+(SAFE&&mode==="story"?" ig":"");const W=mode==="tv"?1920:1080,H=mode==="tv"?1080:1920;const s=Math.min(innerWidth/W,innerHeight/H);stage.style.transform=`scale(${s})`;}
 addEventListener("resize",()=>{if(!Q.get("v")){mode=innerWidth>innerHeight*1.2?"tv":"story"}fit();layoutTick()});
 fit();
 
@@ -192,7 +201,7 @@ function apply(d){
  $("upd").textContent="تحديث "+hm(lastUpd);
 }
 function renderRows(newIds){
- const n=4;
+ const n=SAFE&&mode==="story"?3:4;
  $("rows").innerHTML=ITEMS.slice(0,n).map(x=>`<div class="row${x.urgent?" u":""}${newIds.has(x.id)?" new":""}">
   <div class="tm">${hm(x.ts)}<small>${ago(x.ts)}</small></div>
   <div><div class="rt">${esc(x.t)}</div><div class="rs"><b>${esc(x.src)}</b>${x.also&&x.also.length?" + "+esc(x.also.slice(0,2).join("، ")):""} · ${CATN[x.cat]||"العالم"}</div></div></div>`).join("");
